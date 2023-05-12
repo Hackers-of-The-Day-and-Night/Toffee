@@ -30,13 +30,15 @@ public class DbExe {
   /** Executes a DDL query
    * @param query SQL query to execute
    */
-  public void ddlExe(String query) {
+  public Boolean ddlExe(String query) {
     try {
       connect();
       Statement stmt = conn.createStatement();
       stmt.execute(query);
+      return true;
     } catch (SQLException e) {
       System.out.println(e.getMessage());
+      return false;
     } finally {
       try { disconnect(); }
       catch (SQLException e) { System.out.println(e.getMessage()); }
@@ -65,12 +67,10 @@ public class DbExe {
       table.clear();
       System.out.println(e.getMessage());
     } finally {
-      try {
-        disconnect();
-      } catch (SQLException e) {
-        System.out.println(e.getMessage());
-      }
+      try { disconnect(); }
+      catch (SQLException e) { System.out.println(e.getMessage()); }
     }
     return table;
   }
+
 }
