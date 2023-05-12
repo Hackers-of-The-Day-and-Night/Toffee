@@ -29,8 +29,9 @@ public class DbExe {
 
   /** Executes a DDL query
    * @param query SQL query to execute
+   * @return true if successful, false otherwise
    */
-  public Boolean ddlExe(String query) {
+  public boolean ddlExe(String query) {
     try {
       connect();
       Statement stmt = conn.createStatement();
@@ -73,4 +74,15 @@ public class DbExe {
     return table;
   }
 
+  public static void main(String[] args) {
+    DbExe db = new DbExe();
+    Vector<Vector<String>> vec = db.dmlExe("SELECT name, email FROM Admin where id = 3;");
+    for (Vector<String> row : vec) {
+      for (String col : row) {
+        System.out.print(col + " ");
+      }
+      System.out.println();
+    }
+    System.out.println(vec.get(0).get(1));
+  }
 }
