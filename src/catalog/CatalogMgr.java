@@ -1,26 +1,30 @@
 package catalog;
 
+import java.util.Objects;
 import java.util.Vector;
 import db.DbExe;
 import gm.GeneralMethods;
-import order.ShippedItem;
-import shoppingcart.ShoppingCart;
-
-import java.util.Vector;
 
 public class CatalogMgr {
 
 
-  private final int ShoppingCartId_;
+  private final int shoppingCartId_;
 
-  CatalogMgr(int ShoppingCartId) {
-    ShoppingCartId_ = ShoppingCartId;
+  public CatalogMgr(int ShoppingCartId) {
+    shoppingCartId_ = ShoppingCartId;
   }
 
   private void listItems(Vector<String> names, Vector<String> categoryIds, Vector<String> brandIds) {
     DbExe db = new DbExe();
     String query = "SELECT * FROM Product";
-    if (names.size() == 0 && categoryIds.size() == 0 && brandIds.size() == 0) { return; }
+    if (names.size() == 0 && categoryIds.size() == 0 && brandIds.size() == 0) {
+      Vector<Vector<String>> vec = db.dmlExe(query);
+      System.out.println("id\tcategoryId\tbrandId\tname\tprice\tisSealed");
+      for (Vector<String> v : vec) {
+        System.out.println(v.get(0) + "\t" + v.get(1) + "\t" + v.get(2) + "\t" + v.get(3) + "\t" + v.get(5) + "\t" + v.get(7));
+      }
+      return;
+    }
     query += " WHERE ";
     if (names.size() != 0) {
       query += "name Like '%";
@@ -69,25 +73,25 @@ public class CatalogMgr {
     System.out.println("2- List items by name");
     System.out.println("3- List items by category");
     System.out.println("4- List items by brand");
-    char c;
+    int c;
     do {
-      c = GeneralMethods.GetCharInput("Enter your choice: (1-4)");
-    } while (c < '1' || c > '4');
+      c = GeneralMethods.GetIntInput("Enter your choice: (1-4)");
+    } while (c < 1 || c > 4);
     Vector<String> names = new Vector<String>(), categoryIds = new Vector<String>(), brandIds = new Vector<String>();
 
     switch (c) {
-      case '1':
+      case 1:
         listItems(names, categoryIds, brandIds);
         break;
-      case '2':
+      case 2:
         names = getData("name");
         listItems(names, categoryIds, brandIds);
         break;
-      case '3':
+      case 3:
         categoryIds = getData("category id");
         listItems(names, categoryIds, brandIds);
         break;
-      case '4':
+      case 4:
         brandIds = getData("brand id");
         listItems(names, categoryIds, brandIds);
         break;
@@ -115,16 +119,19 @@ public class CatalogMgr {
   public boolean selectItem() {
     DbExe db = new DbExe();
     int pid = GeneralMethods.GetIntInput("Enter product id:");
-    Vector<Vector<String>> product = db.dmlExe("SELECT id, isSealed FROM Product WHERE id = " + pid + ";");
+    Vector<Vector<String>> product = db.dmlExe("SELECT id, price, isSealed FROM Product WHERE id = " + pid + ";");
     if (product.size() == 0) { return false; }
-    double qty = GeneralMethods.GetDoubleInput("Enter quantity:");
+    double qty;
     do {
       System.out.println("Quantity must be between 0 and 50.");
       qty = GeneralMethods.GetDoubleInput("Enter quantity:");
-      if (product.get(0).get(1) == "1") { qty = Math.floor(qty); }
+      if (Objects.equals(product.get(0).get(2), "1")) { qty = Math.floor(qty); }
     } while (qty <= 0 || qty > 50);
-    return db.ddlExe("INSERT INTO ShoppingCartItems (ShoppingCartId, productId, quantity) " +
-        "VALUES (" + ShoppingCartId_ + ", " + pid + ", " + qty + ");");
+    if (db.dmlExe("SELECT * FROM ShoppingCartItem WHERE shoppingCartId = " + shoppingCartId_ + " AND productId = " + pid + ";").size() != 0) {
+      return db.ddlExe("UPDATE ShoppingCartItem SET quantity = quantity + " + qty + " WHERE shoppingCartId = " + shoppingCartId_ + " AND productId = " + pid + ";");
+    }
+    return db.ddlExe("INSERT INTO ShoppingCartItem (shoppingCartId, productId, quantity, unitPrice) " +
+        "VALUES (" + shoppingCartId_ + ", " + pid + ", " + qty + ", " + product.get(0).get(1) + ");");
   }
 
   public static void main(String[] args) {
@@ -132,6 +139,7 @@ public class CatalogMgr {
     CatalogMgr cm = new CatalogMgr(1);
     cm.listCategories();
     cm.listItems();
+    cm.selectItem();
   }
 
 }

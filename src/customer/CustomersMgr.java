@@ -7,7 +7,7 @@ import java.util.Vector;
 
 public class CustomersMgr {
 
-  public boolean addCustomer() {
+  public Customer addCustomer() {
     String name = GeneralMethods.GetStringInput("Enter name:");
     String email = GeneralMethods.GetStringInput("Enter email:");
     String password = GeneralMethods.GetStringInput("Enter password:");
@@ -16,7 +16,14 @@ public class CustomersMgr {
     boolean isEmailTaken = db.dmlExe("SELECT * FROM Customer WHERE email = '" + email + "';").size() != 0;
     if (isEmailTaken) {
       System.out.println("Email is already taken.");
-      return false;
+      return null;
+    } else if (!email.contains("@")) {
+      System.out.println("Invalid email.");
+      return null;
+    }
+    if (password.length() < 8) {
+      System.out.println("Password must be at least 8 characters long.");
+      return null;
     }
     MailService ms = new MailService();
     String otp = ms.sendOTP(email, "Welcome to Toffee!");
@@ -32,15 +39,15 @@ public class CustomersMgr {
       if (isInserted) {
         System.out.println("Customer added successfully.");
         ms.sendEmail(email, "Welcome to Toffee!", "Your registration completed!\nNow you can buy our products as you want!\n");
-        return true;
+        return new Customer(Integer.parseInt(db.dmlExe("SELECT max(id) FROM Customer;").get(0).get(0)), name, email, password, address);
       } else {
         System.out.println("Error: Failed to add customer. Please try again.");
-        return false;
+        return null;
       }
     } else {
       System.out.println("Failed to verify OTP.");
       System.out.println("Customer not added.");
-      return false;
+      return null;
     }
   }
 

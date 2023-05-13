@@ -1,6 +1,7 @@
 package gm;
 
 import java.util.Scanner;
+import java.util.Vector;
 
 public class GeneralMethods {
   public static String GetStringInput(String prompt) {
@@ -33,9 +34,16 @@ public class GeneralMethods {
 
   public static char GetCharInput(String prompt) {
     Scanner in = new Scanner(System.in);
-    char c;
     System.out.println(prompt);
-    c = Character.toLowerCase(in.nextLine().charAt(0));
-    return c;
+    return in.nextLine().charAt(0);
   }
+
+  public static void PrintMenu(Vector<String> menu) {
+    System.out.println("==================================");
+    for (int i = 0; i < menu.size(); i++) {
+      System.out.println(menu.get(i));
+    }
+    System.out.println("==================================");
+  }
+
 }
